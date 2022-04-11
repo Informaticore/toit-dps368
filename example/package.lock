@@ -1,0 +1,6 @@
+# Toit Lock File.
+prefixes:
+  dps368: ..
+packages:
+  ..:
+    path: ..

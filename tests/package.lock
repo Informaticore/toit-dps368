@@ -1,0 +1,8 @@
+prefixes:
+  test_utils: ..
+  toit_dps368: ..
+  config: ..
+  utils: ..
+packages:
+  ..:
+    path: ..
