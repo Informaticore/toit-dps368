@@ -11,6 +11,7 @@ class TestUtils implements TestCase:
     test_utils_is_bit_not_set
     test_utils_read_bits_size_8
     test_utils_read_bits_size_16
+    test_split
 
   test_utils_enable_bit:
     value/int := 0b0000_0010
@@ -54,9 +55,7 @@ class TestUtils implements TestCase:
     src := 0b1001110111
     sub := utils.read_bits src 9 5 16
     assertEquals 0b10011 sub
-
-  test_utils_twos_complement:
-    
+  
 
 main:
   test := TestUtils

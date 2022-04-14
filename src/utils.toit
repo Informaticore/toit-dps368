@@ -51,7 +51,7 @@ read_bits src/int from_bit/int to_bit/int size/int=8 -> int:
   /**
 
   */
-get_twos_complement raw/int length/int -> int:
-  if (raw & (1 << (length - 1))) != 0:
-    return raw - (1 << length) 
+twos_comp raw/int bits/int -> int:
+  if (raw & (1 << (bits - 1))) != 0:
+    return raw - (1 << bits) 
   return raw
