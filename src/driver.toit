@@ -10,22 +10,35 @@ I2C_ADDRESS_PD ::= 0x76
 class DPS368:
 
   registers_/serial.Registers
-  scale_factor/int := 0
   coef/Coefficients? := null
 
   constructor device/serial.Device:
     registers_ = device.registers 
-    scale_factor = 0
 
-  init measure_rate/int oversampling_rate/int:
-    pressure_cfg := cfg.PressureConfig measure_rate oversampling_rate
-    pressure_config pressure_cfg
-
+  init pressure_measure_rate/int pressure_oversampling_rate/int temperature_measure_rate/int temperature_oversampling_rate/int:
     sensor := temperature_sensor
-    temperature_cfg := cfg.TemperatureConfig sensor measure_rate oversampling_rate
+    temperature_cfg := cfg.TemperatureConfig sensor temperature_measure_rate temperature_oversampling_rate
+    pressure_cfg := cfg.PressureConfig pressure_measure_rate pressure_oversampling_rate
+    pressure_scale_factor := pressure_cfg.comp_scale_factor
+    temperature_scale_factor := temperature_cfg.comp_scale_factor
+    coef = calibration_coefficiency_values pressure_scale_factor temperature_scale_factor
+
+    enable_p_shift pressure_oversampling_rate > cfg.OVERSAMPLING_RATE.TIMES_8
+    enable_t_shift temperature_oversampling_rate > cfg.OVERSAMPLING_RATE.TIMES_8
+
+    // set dps368 to standby to set config
+    standby
+    // set config
     temperature_config temperature_cfg
-    scale_factor = pressure_cfg.comp_scale_factor
-    coef = calibration_coefficiency_values  scale_factor
+    pressure_config pressure_cfg
+    //perform a first temperature measurement
+    //the most recent temperature will be saved internally
+    //and used for compensation when calculating pressure
+    measureTemperatureOnce
+    temperature_raw
+
+    correct_temperature
+    standby
 
   productId -> string:
     version := registers_.read_u8 reg.PROD_ID
@@ -48,6 +61,53 @@ class DPS368:
     tmp := (tmp_b2 << 16) | (tmp_b1 << 8) | tmp_b0
 
     return utils.twos_comp tmp 24
+
+  correct_temperature:
+    registers_.write_u8 reg.FIX_TMP_1 0xA5
+    registers_.write_u8 reg.FIX_TMP_2 0x96
+    registers_.write_u8 reg.FIX_TMP_3 0x02
+    registers_.write_u8 reg.FIX_TMP_4 0x00
+    registers_.write_u8 reg.FIX_TMP_5 0x00
+
+    measureTemperatureOnce
+    temperature_raw
+
+  enable_interrupt enable/bool:
+    enable_config reg.CFG_REG 7 enable
+
+  enable_fifo_full_interrupt enable/bool:
+    enable_config reg.CFG_REG 6 enable
+
+  enable_temperature_interrupt enable/bool:
+    enable_config reg.CFG_REG 5 enable
+
+  enable_pressure_interrupt enable/bool:
+    enable_config reg.CFG_REG 4 enable
+
+  enable_t_shift enable/bool:
+    enable_config reg.CFG_REG 3 enable
+
+  enable_p_shift enable/bool:
+    enable_config reg.CFG_REG 2 enable
+
+  enable_fifo enable/bool:
+    enable_config reg.CFG_REG 1 enable
+
+  enable_config cfg_register/int bit_nr/int enable/bool:
+    config := registers_.read_u8 cfg_register
+    if enable:
+      config = utils.enable_bit config bit_nr
+    else:
+      config = utils.disable_bit config bit_nr
+    registers_.write_u8 cfg_register config
+
+  is_fifo_full -> bool:
+    value := registers_.read_u8 reg.FIFO_STS
+    return utils.is_bit_set value 1
+
+  is_fifo_empty -> bool:
+    value := registers_.read_u8 reg.FIFO_STS
+    return utils.is_bit_set value 0
 
   measure_config -> int:
     return registers_.read_u8 reg.MEAS_CFG
@@ -79,7 +139,7 @@ class DPS368:
   temperature_sensor -> int:
     coef_srce := registers_.read_u8 reg.COEF_SRCE
     tmp_coef_srce := utils.is_bit_set coef_srce 7
-    if tmp_coef_srce == true:
+    if tmp_coef_srce:
       return 1
     else:
       return 0
@@ -90,7 +150,7 @@ class DPS368:
   temperature -> float:
     return coef.calculate_temperature temperature_raw
 
-  calibration_coefficiency_values comp_scale_factor/int -> Coefficients:
+  calibration_coefficiency_values press_comp_scale_factor/int temp_comp_scale_factor/int -> Coefficients:
     c0_1    := registers_.read_u8 reg.COEF.C0
     c0_c1   := registers_.read_u8 reg.COEF.C0_C1
     c1_1    := registers_.read_u8 reg.COEF.C1
@@ -120,5 +180,5 @@ class DPS368:
     c21 := utils.twos_comp ((c21_1 << 8) | c21_2) 16
     c30 := utils.twos_comp ((c30_1 << 8) | c30_2) 16
      
-    return Coefficients c0 c1 c00 c10 c01 c11 c20 c21 c30 comp_scale_factor
+    return Coefficients c0 c1 c00 c10 c01 c11 c20 c21 c30 press_comp_scale_factor temp_comp_scale_factor
   

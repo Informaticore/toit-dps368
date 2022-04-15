@@ -14,6 +14,12 @@ RESET     ::= 0x0C
 PROD_ID   ::= 0x0D
 COEF_SRCE ::= 0x28
 
+FIX_TMP_1 ::= 0x0E
+FIX_TMP_2 ::= 0x0F
+FIX_TMP_3 ::= 0x62
+FIX_TMP_4 ::= 0x0E
+FIX_TMP_5 ::= 0x0F
+
 class COEF:
   static C0 ::= 0x10
   static C0_C1 ::= 0x11

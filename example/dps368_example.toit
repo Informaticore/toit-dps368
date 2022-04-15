@@ -1,4 +1,3 @@
-import serial
 import gpio
 import i2c
 import dps368
@@ -11,8 +10,9 @@ main:
 
   device := bus.device dps368.I2C_ADDRESS_PD
   dps368 := dps368.DPS368 device
-  dps368.init cfg.MEASURE_RATE.TIMES_4 cfg.OVERSAMPLING_RATE.TIMES_4
+  dps368.init cfg.MEASURE_RATE.TIMES_4 cfg.OVERSAMPLING_RATE.TIMES_64 cfg.MEASURE_RATE.TIMES_4 cfg.OVERSAMPLING_RATE.TIMES_1
 
+  sleep --ms=100 
   dps368.measureContinousPressureAndTemperature
 
   print "ProductId:  $dps368.productId"
