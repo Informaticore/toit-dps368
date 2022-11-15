@@ -11,7 +11,6 @@ class TestUtils implements TestCase:
     test_utils_is_bit_not_set
     test_utils_read_bits_size_8
     test_utils_read_bits_size_16
-    test_split
 
   test_utils_enable_bit:
     value/int := 0b0000_0010

@@ -12,15 +12,15 @@ class TestSensorCfg implements TestCase:
 
   test_pressure_config:
     value/int := 0b0001_0010
-    cfg := config.PressureConfig config.MEAS_RATE_2 config.OS_4_TIMES
+    cfg := config.PressureConfig config.MEASURE_RATE.TIMES_2 config.OVERSAMPLING_RATE.TIMES_4
     assertEquals value cfg.cfg_value    
 
   test_temperature_config:
     value/int := 0b0001_0010 // sensor 0
-    cfg := config.TemperatureConfig 0 config.MEAS_RATE_2 config.OS_4_TIMES
+    cfg := config.TemperatureConfig 0 config.MEASURE_RATE.TIMES_2 config.OVERSAMPLING_RATE.TIMES_4
     assertEquals value cfg.cfg_value
     value = 0b1001_0010  //sensor 1
-    cfg = config.TemperatureConfig 1 config.MEAS_RATE_2 config.OS_4_TIMES
+    cfg = config.TemperatureConfig 1 config.MEASURE_RATE.TIMES_2 config.OVERSAMPLING_RATE.TIMES_4
     assertEquals value cfg.cfg_value
 
   test_temperature_config_throw_sensor:

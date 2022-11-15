@@ -39,6 +39,7 @@ class DPS368:
 
     correct_temperature
     standby
+    sleep --ms=100
 
   productId -> string:
     version := registers_.read_u8 reg.PROD_ID
