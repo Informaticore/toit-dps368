@@ -1,6 +1,12 @@
 # toit-dps368
 Library to control a DPS368 Pressure Sensor with toitlang
 
+## Install
+To install the package run
+```
+jag pkg install dps368
+```
+
 ## Getting Started
 ```
 import gpio
