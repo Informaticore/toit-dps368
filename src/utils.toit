@@ -38,7 +38,7 @@ disable_bit value/int bit_num/int:
 */
 read_bits src/int from_bit/int to_bit/int size/int=8 -> int:
   value := 0x00
-  for bit := size-1; bit >= 0; bit--:
+  for bit := size - 1; bit >= 0; bit--:
     if bit <= from_bit and bit >= to_bit:
       value = value << 1
       if (is_bit_set src bit): 
