@@ -16,6 +16,11 @@ class DPS368:
     registers_ = device.registers 
 
   init pressure_measure_rate/int pressure_oversampling_rate/int temperature_measure_rate/int temperature_oversampling_rate/int:
+    //wait for the sensor to be ready
+    with-timeout --ms=1000:
+      while not is-sensor-rdy:
+        sleep --ms=10
+
     sensor := temperature_sensor
     temperature_cfg := cfg.TemperatureConfig sensor temperature_measure_rate temperature_oversampling_rate
     pressure_cfg := cfg.PressureConfig pressure_measure_rate pressure_oversampling_rate
@@ -31,6 +36,7 @@ class DPS368:
     // set config
     temperature_config temperature_cfg
     pressure_config pressure_cfg
+
     //perform a first temperature measurement
     //the most recent temperature will be saved internally
     //and used for compensation when calculating pressure
@@ -46,6 +52,12 @@ class DPS368:
     revision := utils.read_bits version 7 4
     productId := utils.read_bits version 3 0
     return "$productId.$revision"
+
+  reset:
+    registers_.write_u8 reg.RESET 0x09
+
+  flush-fifo:
+    registers_.write_u8 reg.RESET 0x80 
 
   pressure_raw -> int:
     psr_b2 := registers_.read_u8 reg.PSR_B2
@@ -110,6 +122,14 @@ class DPS368:
     value := registers_.read_u8 reg.FIFO_STS
     return utils.is_bit_set value 0
 
+  is-coef-available -> bool:
+    value := registers_.read_u8 reg.MEAS_CFG
+    return utils.is_bit_set value 7
+
+  is-sensor-rdy -> bool:
+    value := registers_.read_u8 reg.MEAS_CFG
+    return utils.is_bit_set value 6
+
   measure_config -> int:
     return registers_.read_u8 reg.MEAS_CFG
 
@@ -152,6 +172,11 @@ class DPS368:
     return coef.calculate_temperature temperature_raw
 
   calibration_coefficiency_values press_comp_scale_factor/int temp_comp_scale_factor/int -> Coefficients:
+    //wait for the coefficients to be available
+    with-timeout --ms=1000:
+      while not is-coef-available:
+        sleep --ms=10
+
     c0_1    := registers_.read_u8 reg.COEF.C0
     c0_c1   := registers_.read_u8 reg.COEF.C0_C1
     c1_1    := registers_.read_u8 reg.COEF.C1

@@ -8,9 +8,9 @@ main:
       --sda=gpio.Pin 21
       --scl=gpio.Pin 22
 
-  device := bus.device dps368.I2C_ADDRESS_PD
+  device := bus.device dps368.I2C_ADDRESS_DEFAULT
   dps368 := dps368.DPS368 device
-  dps368.init cfg.MEASURE_RATE.TIMES_4 cfg.OVERSAMPLING_RATE.TIMES_64 cfg.MEASURE_RATE.TIMES_4 cfg.OVERSAMPLING_RATE.TIMES_1
+  dps368.init cfg.MEASURE_RATE.TIMES_4 cfg.OVERSAMPLING_RATE.TIMES_64 cfg.MEASURE_RATE.TIMES_4 cfg.OVERSAMPLING_RATE.TIMES_64
 
   dps368.measureContinousPressureAndTemperature
 
@@ -18,6 +18,6 @@ main:
   print "Config: $dps368.measure_config"
   zero := dps368.pressure
   while true:
-    print "$(%.2f dps368.pressure) pA"
-    //print "$(%.2f dps368.temperature) °C"
-    sleep --ms=500
+    print "$(%.2f dps368.pressure / 100) hPa"
+    print "$(%.2f dps368.temperature) °C"
+    sleep --ms=1000

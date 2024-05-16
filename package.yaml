@@ -1,2 +1,6 @@
 name: dps368
 description: Library to control a DPS368 Pressure Sensor with toitlang
+dependencies:
+  dps368:
+    url: github.com/Informaticore/toit-dps368
+    version: ^1.1.0

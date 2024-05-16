@@ -1,1 +1,7 @@
-{}
+prefixes:
+  dps368: toit-dps368
+packages:
+  toit-dps368:
+    url: github.com/Informaticore/toit-dps368
+    version: 1.1.0
+    hash: f79f3777469aedfece1830f80900c714a34697ad
